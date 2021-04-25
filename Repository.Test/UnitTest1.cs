@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using Contracts;
+using Entities;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Repository.Test
@@ -9,17 +11,40 @@ namespace Repository.Test
     {
         private IRepositoryWrapper _repositoryWrapper;
 
-        public UnitTest1(IRepositoryWrapper repositoryWrapper)
+        private DbContextOptions<RepositoryContext> DbContextOptions { get; }
+        private string ConnectionString = "server=.;database=unit_test; trusted_connection = true;";
+
+        public UnitTest1()
         {
-            _repositoryWrapper = repositoryWrapper;
+            DbContextOptions = new DbContextOptionsBuilder<RepositoryContext>()
+                .UseSqlServer(ConnectionString)
+                .Options;
+
+            _repositoryWrapper = new RepositoryWrapper(new RepositoryContext(DbContextOptions));
         }
 
         [Fact]
-        public void HasUser()
+        public void TestHasUsers()
         {
-            var Users = _repositoryWrapper.User.FindAll();
+            var users = _repositoryWrapper.User.FindAll();
 
-            Assert.False(Users.Count() == 0);
+            Assert.True(users.Any());
+        }
+
+        [Fact]
+        public void TestHasAdminUser()
+        {
+            var users = _repositoryWrapper.User.FindWithRolesByCondition(u => u.Roles.Any(r => r.Name == "Admin"));
+
+            Assert.True(users.Any());
+        }
+
+        [Fact]
+        public void TestUserCanLogin()
+        {
+            var loggedIn = _repositoryWrapper.User.Login("admin@admin.com", "abcd");
+
+            Assert.True(loggedIn);
         }
     }
 }
