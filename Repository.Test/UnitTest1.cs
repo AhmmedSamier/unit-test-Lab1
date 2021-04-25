@@ -10,6 +10,7 @@ namespace Repository.Test
     public class UnitTest1
     {
         // new comment
+        // new comment 2
         private IRepositoryWrapper _repositoryWrapper;
 
         private DbContextOptions<RepositoryContext> DbContextOptions { get; }
